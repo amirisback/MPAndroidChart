@@ -159,68 +159,48 @@ public class BubbleChartActivity extends DemoBase implements OnSeekBarChangeList
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        switch (item.getItemId()) {
-            case R.id.viewGithub: {
-                Intent i = new Intent(Intent.ACTION_VIEW);
-                i.setData(Uri.parse("https://github.com/PhilJay/MPAndroidChart/blob/master/MPChartExample/src/com/xxmassdeveloper/mpchartexample/BubbleChartActivity.java"));
-                startActivity(i);
-                break;
-            }
-            case R.id.actionToggleValues: {
-                for (IDataSet set : chart.getData().getDataSets())
-                    set.setDrawValues(!set.isDrawValuesEnabled());
+        int itemId = item.getItemId();
+        if (itemId == R.id.viewGithub) {
+            Intent i = new Intent(Intent.ACTION_VIEW);
+            i.setData(Uri.parse("https://github.com/PhilJay/MPAndroidChart/blob/master/MPChartExample/src/com/xxmassdeveloper/mpchartexample/BubbleChartActivity.java"));
+            startActivity(i);
+        } else if (itemId == R.id.actionToggleValues) {
+            for (IDataSet set : chart.getData().getDataSets())
+                set.setDrawValues(!set.isDrawValuesEnabled());
 
-                chart.invalidate();
-                break;
-            }
-            case R.id.actionToggleIcons: {
-                for (IDataSet set : chart.getData().getDataSets())
-                    set.setDrawIcons(!set.isDrawIconsEnabled());
+            chart.invalidate();
+        } else if (itemId == R.id.actionToggleIcons) {
+            for (IDataSet set : chart.getData().getDataSets())
+                set.setDrawIcons(!set.isDrawIconsEnabled());
 
+            chart.invalidate();
+        } else if (itemId == R.id.actionToggleHighlight) {
+            if (chart.getData() != null) {
+                chart.getData().setHighlightEnabled(!chart.getData().isHighlightEnabled());
                 chart.invalidate();
-                break;
             }
-            case R.id.actionToggleHighlight: {
-                if(chart.getData() != null) {
-                    chart.getData().setHighlightEnabled(!chart.getData().isHighlightEnabled());
-                    chart.invalidate();
-                }
-                break;
-            }
-            case R.id.actionTogglePinch: {
-                if (chart.isPinchZoomEnabled())
-                    chart.setPinchZoom(false);
-                else
-                    chart.setPinchZoom(true);
+        } else if (itemId == R.id.actionTogglePinch) {
+            if (chart.isPinchZoomEnabled())
+                chart.setPinchZoom(false);
+            else
+                chart.setPinchZoom(true);
 
-                chart.invalidate();
-                break;
+            chart.invalidate();
+        } else if (itemId == R.id.actionToggleAutoScaleMinMax) {
+            chart.setAutoScaleMinMaxEnabled(!chart.isAutoScaleMinMaxEnabled());
+            chart.notifyDataSetChanged();
+        } else if (itemId == R.id.actionSave) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                saveToGallery();
+            } else {
+                requestStoragePermission(chart);
             }
-            case R.id.actionToggleAutoScaleMinMax: {
-                chart.setAutoScaleMinMaxEnabled(!chart.isAutoScaleMinMaxEnabled());
-                chart.notifyDataSetChanged();
-                break;
-            }
-            case R.id.actionSave: {
-                if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                    saveToGallery();
-                } else {
-                    requestStoragePermission(chart);
-                }
-                break;
-            }
-            case R.id.animateX: {
-                chart.animateX(2000);
-                break;
-            }
-            case R.id.animateY: {
-                chart.animateY(2000);
-                break;
-            }
-            case R.id.animateXY: {
-                chart.animateXY(2000, 2000);
-                break;
-            }
+        } else if (itemId == R.id.animateX) {
+            chart.animateX(2000);
+        } else if (itemId == R.id.animateY) {
+            chart.animateY(2000);
+        } else if (itemId == R.id.animateXY) {
+            chart.animateXY(2000, 2000);
         }
         return true;
     }

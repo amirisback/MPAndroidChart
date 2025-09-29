@@ -99,48 +99,38 @@ public class DrawChartActivity extends DemoBase implements OnChartValueSelectedL
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        switch (item.getItemId()) {
-            case R.id.actionToggleValues: {
-                List<ILineDataSet> sets = chart.getData()
-                        .getDataSets();
+        int itemId = item.getItemId();
+        if (itemId == R.id.actionToggleValues) {
+            List<ILineDataSet> sets = chart.getData()
+                    .getDataSets();
 
-                for (ILineDataSet iSet : sets) {
+            for (ILineDataSet iSet : sets) {
 
-                    LineDataSet set = (LineDataSet) iSet;
-                    set.setDrawValues(!set.isDrawValuesEnabled());
-                }
+                LineDataSet set = (LineDataSet) iSet;
+                set.setDrawValues(!set.isDrawValuesEnabled());
+            }
 
+            chart.invalidate();
+        } else if (itemId == R.id.actionToggleHighlight) {
+            if (chart.getData() != null) {
+                chart.getData().setHighlightEnabled(!chart.getData().isHighlightEnabled());
                 chart.invalidate();
-                break;
             }
-            case R.id.actionToggleHighlight: {
-                if(chart.getData() != null) {
-                    chart.getData().setHighlightEnabled(!chart.getData().isHighlightEnabled());
-                    chart.invalidate();
-                }
-                break;
-            }
-            case R.id.actionTogglePinch: {
-                if (chart.isPinchZoomEnabled())
-                    chart.setPinchZoom(false);
-                else
-                    chart.setPinchZoom(true);
+        } else if (itemId == R.id.actionTogglePinch) {
+            if (chart.isPinchZoomEnabled())
+                chart.setPinchZoom(false);
+            else
+                chart.setPinchZoom(true);
 
-                chart.invalidate();
-                break;
-            }
-            case R.id.actionToggleAutoScaleMinMax: {
-                chart.setAutoScaleMinMaxEnabled(!chart.isAutoScaleMinMaxEnabled());
-                chart.notifyDataSetChanged();
-                break;
-            }
-            case R.id.actionSave: {
-                if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                    saveToGallery();
-                } else {
-                    requestStoragePermission(chart);
-                }
-                break;
+            chart.invalidate();
+        } else if (itemId == R.id.actionToggleAutoScaleMinMax) {
+            chart.setAutoScaleMinMaxEnabled(!chart.isAutoScaleMinMaxEnabled());
+            chart.notifyDataSetChanged();
+        } else if (itemId == R.id.actionSave) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                saveToGallery();
+            } else {
+                requestStoragePermission(chart);
             }
         }
         return true;
