@@ -1,296 +1,283 @@
+package com.xxmassdeveloper.mpchartexample
 
-package com.xxmassdeveloper.mpchartexample;
+import android.Manifest
+import android.annotation.SuppressLint
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.graphics.Color
+import android.graphics.Typeface
+import android.os.Bundle
+import android.text.SpannableString
+import android.text.style.ForegroundColorSpan
+import android.text.style.RelativeSizeSpan
+import android.text.style.StyleSpan
+import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
+import android.view.WindowManager
+import android.widget.SeekBar
+import android.widget.SeekBar.OnSeekBarChangeListener
+import android.widget.TextView
+import androidx.core.content.ContextCompat
+import com.github.mikephil.charting.animation.Easing
+import com.github.mikephil.charting.charts.PieChart
+import com.github.mikephil.charting.components.Legend
+import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.data.PieData
+import com.github.mikephil.charting.data.PieDataSet
+import com.github.mikephil.charting.data.PieEntry
+import com.github.mikephil.charting.formatter.PercentFormatter
+import com.github.mikephil.charting.highlight.Highlight
+import com.github.mikephil.charting.listener.OnChartValueSelectedListener
+import com.github.mikephil.charting.utils.ColorTemplate
+import com.xxmassdeveloper.mpchartexample.notimportant.DemoBase
+import androidx.core.net.toUri
 
-import android.Manifest;
-import android.annotation.SuppressLint;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.graphics.Color;
-import android.graphics.Typeface;
-import android.net.Uri;
-import android.os.Bundle;
-import androidx.core.content.ContextCompat;
-import android.text.SpannableString;
-import android.text.style.ForegroundColorSpan;
-import android.text.style.RelativeSizeSpan;
-import android.text.style.StyleSpan;
-import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.WindowManager;
-import android.widget.SeekBar;
-import android.widget.SeekBar.OnSeekBarChangeListener;
-import android.widget.TextView;
+class PiePolylineChartActivity : DemoBase(), OnSeekBarChangeListener, OnChartValueSelectedListener {
 
-import com.github.mikephil.charting.animation.Easing;
-import com.github.mikephil.charting.charts.PieChart;
-import com.github.mikephil.charting.components.Legend;
-import com.github.mikephil.charting.data.Entry;
-import com.github.mikephil.charting.data.PieData;
-import com.github.mikephil.charting.data.PieDataSet;
-import com.github.mikephil.charting.data.PieEntry;
-import com.github.mikephil.charting.formatter.PercentFormatter;
-import com.github.mikephil.charting.highlight.Highlight;
-import com.github.mikephil.charting.interfaces.datasets.IDataSet;
-import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
-import com.github.mikephil.charting.utils.ColorTemplate;
-import com.xxmassdeveloper.mpchartexample.notimportant.DemoBase;
+    private var chart: PieChart? = null
+    private var seekBarX: SeekBar? = null
+    private var seekBarY: SeekBar? = null
+    private var tvX: TextView? = null
+    private var tvY: TextView? = null
 
-import java.util.ArrayList;
+    private var tf: Typeface? = null
 
-public class PiePolylineChartActivity extends DemoBase implements OnSeekBarChangeListener,
-        OnChartValueSelectedListener {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_FULLSCREEN,
+            WindowManager.LayoutParams.FLAG_FULLSCREEN
+        )
+        setContentView(R.layout.activity_piechart)
 
-    private PieChart chart;
-    private SeekBar seekBarX, seekBarY;
-    private TextView tvX, tvY;
+        title = "PiePolylineChartActivity"
 
-    private Typeface tf;
+        tvX = findViewById<TextView>(R.id.tvXMax)
+        tvY = findViewById<TextView>(R.id.tvYMax)
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        setContentView(R.layout.activity_piechart);
+        seekBarX = findViewById<SeekBar>(R.id.seekBar1)
+        seekBarY = findViewById<SeekBar>(R.id.seekBar2)
 
-        setTitle("PiePolylineChartActivity");
+        seekBarX!!.setOnSeekBarChangeListener(this)
+        seekBarY!!.setOnSeekBarChangeListener(this)
 
-        tvX = findViewById(R.id.tvXMax);
-        tvY = findViewById(R.id.tvYMax);
+        chart = findViewById<PieChart>(R.id.chart1)
+        chart!!.setUsePercentValues(true)
+        chart!!.description.isEnabled = false
+        chart!!.setExtraOffsets(5f, 10f, 5f, 5f)
 
-        seekBarX = findViewById(R.id.seekBar1);
-        seekBarY = findViewById(R.id.seekBar2);
+        chart!!.setDragDecelerationFrictionCoef(0.95f)
 
-        seekBarX.setOnSeekBarChangeListener(this);
-        seekBarY.setOnSeekBarChangeListener(this);
+        tf = Typeface.createFromAsset(assets, "OpenSans-Regular.ttf")
 
-        chart = findViewById(R.id.chart1);
-        chart.setUsePercentValues(true);
-        chart.getDescription().setEnabled(false);
-        chart.setExtraOffsets(5, 10, 5, 5);
+        chart!!.setCenterTextTypeface(Typeface.createFromAsset(assets, "OpenSans-Light.ttf"))
+        chart!!.centerText = generateCenterSpannableText()
 
-        chart.setDragDecelerationFrictionCoef(0.95f);
+        chart!!.setExtraOffsets(20f, 0f, 20f, 0f)
 
-        tf = Typeface.createFromAsset(getAssets(), "OpenSans-Regular.ttf");
+        chart!!.isDrawHoleEnabled = true
+        chart!!.setHoleColor(Color.WHITE)
 
-        chart.setCenterTextTypeface(Typeface.createFromAsset(getAssets(), "OpenSans-Light.ttf"));
-        chart.setCenterText(generateCenterSpannableText());
+        chart!!.setTransparentCircleColor(Color.WHITE)
+        chart!!.setTransparentCircleAlpha(110)
 
-        chart.setExtraOffsets(20.f, 0.f, 20.f, 0.f);
+        chart!!.holeRadius = 58f
+        chart!!.transparentCircleRadius = 61f
 
-        chart.setDrawHoleEnabled(true);
-        chart.setHoleColor(Color.WHITE);
+        chart!!.setDrawCenterText(true)
 
-        chart.setTransparentCircleColor(Color.WHITE);
-        chart.setTransparentCircleAlpha(110);
-
-        chart.setHoleRadius(58f);
-        chart.setTransparentCircleRadius(61f);
-
-        chart.setDrawCenterText(true);
-
-        chart.setRotationAngle(0);
+        chart!!.setRotationAngle(0f)
         // enable rotation of the chart by touch
-        chart.setRotationEnabled(true);
-        chart.setHighlightPerTapEnabled(true);
+        chart!!.isRotationEnabled = true
+        chart!!.isHighlightPerTapEnabled = true
 
         // chart.setUnit(" €");
         // chart.setDrawUnitsInChart(true);
 
         // add a selection listener
-        chart.setOnChartValueSelectedListener(this);
+        chart!!.setOnChartValueSelectedListener(this)
 
-        seekBarX.setProgress(4);
-        seekBarY.setProgress(100);
+        seekBarX!!.progress = 4
+        seekBarY!!.progress = 100
 
-        chart.animateY(1400, Easing.EaseInOutQuad);
+        chart!!.animateY(1400, Easing.EaseInOutQuad)
+
         // chart.spin(2000, 0, 360);
-
-        Legend l = chart.getLegend();
-        l.setVerticalAlignment(Legend.LegendVerticalAlignment.TOP);
-        l.setHorizontalAlignment(Legend.LegendHorizontalAlignment.RIGHT);
-        l.setOrientation(Legend.LegendOrientation.VERTICAL);
-        l.setDrawInside(false);
-        l.setEnabled(false);
+        val l = chart!!.legend
+        l.verticalAlignment = Legend.LegendVerticalAlignment.TOP
+        l.horizontalAlignment = Legend.LegendHorizontalAlignment.RIGHT
+        l.orientation = Legend.LegendOrientation.VERTICAL
+        l.setDrawInside(false)
+        l.isEnabled = false
     }
 
-    private void setData(int count, float range) {
-
-        ArrayList<PieEntry> entries = new ArrayList<>();
+    private fun setData(count: Int, range: Float) {
+        val entries = ArrayList<PieEntry?>()
 
         // NOTE: The order of the entries when being added to the entries array determines their position around the center of
         // the chart.
-        for (int i = 0; i < count; i++) {
-            entries.add(new PieEntry((float) (Math.random() * range) + range / 5, parties[i % parties.length]));
+        for (i in 0..<count) {
+            entries.add(
+                PieEntry(
+                    (Math.random() * range).toFloat() + range / 5,
+                    parties[i % parties.size]
+                )
+            )
         }
 
-        PieDataSet dataSet = new PieDataSet(entries, "Election Results");
-        dataSet.setSliceSpace(3f);
-        dataSet.setSelectionShift(5f);
+        val dataSet = PieDataSet(entries, "Election Results")
+        dataSet.setSliceSpace(3f)
+        dataSet.selectionShift = 5f
 
         // add a lot of colors
+        val colors = ArrayList<Int?>()
 
-        ArrayList<Integer> colors = new ArrayList<>();
+        for (c in ColorTemplate.VORDIPLOM_COLORS) colors.add(c)
 
-        for (int c : ColorTemplate.VORDIPLOM_COLORS)
-            colors.add(c);
+        for (c in ColorTemplate.JOYFUL_COLORS) colors.add(c)
 
-        for (int c : ColorTemplate.JOYFUL_COLORS)
-            colors.add(c);
+        for (c in ColorTemplate.COLORFUL_COLORS) colors.add(c)
 
-        for (int c : ColorTemplate.COLORFUL_COLORS)
-            colors.add(c);
+        for (c in ColorTemplate.LIBERTY_COLORS) colors.add(c)
 
-        for (int c : ColorTemplate.LIBERTY_COLORS)
-            colors.add(c);
+        for (c in ColorTemplate.PASTEL_COLORS) colors.add(c)
 
-        for (int c : ColorTemplate.PASTEL_COLORS)
-            colors.add(c);
+        colors.add(ColorTemplate.getHoloBlue())
 
-        colors.add(ColorTemplate.getHoloBlue());
+        dataSet.colors = colors
 
-        dataSet.setColors(colors);
+
         //dataSet.setSelectionShift(0f);
-
-
-        dataSet.setValueLinePart1OffsetPercentage(80.f);
-        dataSet.setValueLinePart1Length(0.2f);
-        dataSet.setValueLinePart2Length(0.4f);
+        dataSet.valueLinePart1OffsetPercentage = 80f
+        dataSet.valueLinePart1Length = 0.2f
+        dataSet.valueLinePart2Length = 0.4f
 
         //dataSet.setXValuePosition(PieDataSet.ValuePosition.OUTSIDE_SLICE);
-        dataSet.setYValuePosition(PieDataSet.ValuePosition.OUTSIDE_SLICE);
+        dataSet.yValuePosition = PieDataSet.ValuePosition.OUTSIDE_SLICE
 
-        PieData data = new PieData(dataSet);
-        data.setValueFormatter(new PercentFormatter());
-        data.setValueTextSize(11f);
-        data.setValueTextColor(Color.BLACK);
-        data.setValueTypeface(tf);
-        chart.setData(data);
+        val data = PieData(dataSet)
+        data.setValueFormatter(PercentFormatter())
+        data.setValueTextSize(11f)
+        data.setValueTextColor(Color.BLACK)
+        data.setValueTypeface(tf)
+        chart!!.setData(data)
 
         // undo all highlights
-        chart.highlightValues(null);
+        chart!!.highlightValues(null)
 
-        chart.invalidate();
+        chart!!.invalidate()
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.pie, menu);
-        return true;
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.pie, menu)
+        return true
     }
 
     @SuppressLint("NonConstantResourceId")
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-
-        int itemId = item.getItemId();
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val itemId = item.getItemId()
         if (itemId == R.id.viewGithub) {
-            Intent i = new Intent(Intent.ACTION_VIEW);
-            i.setData(Uri.parse("https://github.com/PhilJay/MPAndroidChart/blob/master/MPChartExample/src/com/xxmassdeveloper/mpchartexample/PiePolylineChartActivity.java"));
-            startActivity(i);
+            val i = Intent(Intent.ACTION_VIEW)
+            i.data = "https://github.com/PhilJay/MPAndroidChart/blob/master/MPChartExample/src/com/xxmassdeveloper/mpchartexample/PiePolylineChartActivity.java".toUri()
+            startActivity(i)
         } else if (itemId == R.id.actionToggleValues) {
-            for (IDataSet<?> set : chart.getData().getDataSets())
-                set.setDrawValues(!set.isDrawValuesEnabled());
+            for (set in chart!!.data
+                .getDataSets()) set.setDrawValues(!set.isDrawValuesEnabled())
 
-            chart.invalidate();
+            chart!!.invalidate()
         } else if (itemId == R.id.actionToggleHole) {
-            if (chart.isDrawHoleEnabled())
-                chart.setDrawHoleEnabled(false);
-            else
-                chart.setDrawHoleEnabled(true);
-            chart.invalidate();
+            if (chart!!.isDrawHoleEnabled()) chart!!.setDrawHoleEnabled(false)
+            else chart!!.setDrawHoleEnabled(true)
+            chart!!.invalidate()
         } else if (itemId == R.id.actionToggleMinAngles) {
-            if (chart.getMinAngleForSlices() == 0f)
-                chart.setMinAngleForSlices(36f);
-            else
-                chart.setMinAngleForSlices(0f);
-            chart.notifyDataSetChanged();
-            chart.invalidate();
+            if (chart!!.getMinAngleForSlices() == 0f) chart!!.setMinAngleForSlices(36f)
+            else chart!!.setMinAngleForSlices(0f)
+            chart!!.notifyDataSetChanged()
+            chart!!.invalidate()
         } else if (itemId == R.id.actionToggleCurvedSlices) {
-            boolean toSet = !chart.isDrawRoundedSlicesEnabled() || !chart.isDrawHoleEnabled();
-            chart.setDrawRoundedSlices(toSet);
-            if (toSet && !chart.isDrawHoleEnabled()) {
-                chart.setDrawHoleEnabled(true);
+            val toSet = !chart!!.isDrawRoundedSlicesEnabled() || !chart!!.isDrawHoleEnabled()
+            chart!!.setDrawRoundedSlices(toSet)
+            if (toSet && !chart!!.isDrawHoleEnabled()) {
+                chart!!.setDrawHoleEnabled(true)
             }
-            if (toSet && chart.isDrawSlicesUnderHoleEnabled()) {
-                chart.setDrawSlicesUnderHole(false);
+            if (toSet && chart!!.isDrawSlicesUnderHoleEnabled()) {
+                chart!!.setDrawSlicesUnderHole(false)
             }
-            chart.invalidate();
+            chart!!.invalidate()
         } else if (itemId == R.id.actionDrawCenter) {
-            if (chart.isDrawCenterTextEnabled())
-                chart.setDrawCenterText(false);
-            else
-                chart.setDrawCenterText(true);
-            chart.invalidate();
+            if (chart!!.isDrawCenterTextEnabled()) chart!!.setDrawCenterText(false)
+            else chart!!.setDrawCenterText(true)
+            chart!!.invalidate()
         } else if (itemId == R.id.actionToggleXValues) {
-            chart.setDrawEntryLabels(!chart.isDrawEntryLabelsEnabled());
-            chart.invalidate();
+            chart!!.setDrawEntryLabels(!chart!!.isDrawEntryLabelsEnabled())
+            chart!!.invalidate()
         } else if (itemId == R.id.actionTogglePercent) {
-            chart.setUsePercentValues(!chart.isUsePercentValuesEnabled());
-            chart.invalidate();
+            chart!!.setUsePercentValues(!chart!!.isUsePercentValuesEnabled())
+            chart!!.invalidate()
         } else if (itemId == R.id.animateX) {
-            chart.animateX(1400);
+            chart!!.animateX(1400)
         } else if (itemId == R.id.animateY) {
-            chart.animateY(1400);
+            chart!!.animateY(1400)
         } else if (itemId == R.id.animateXY) {
-            chart.animateXY(1400, 1400);
+            chart!!.animateXY(1400, 1400)
         } else if (itemId == R.id.actionToggleSpin) {
-            chart.spin(1000, chart.getRotationAngle(), chart.getRotationAngle() + 360, Easing.EaseInOutCubic);
+            chart!!.spin(
+                1000,
+                chart!!.getRotationAngle(),
+                chart!!.getRotationAngle() + 360,
+                Easing.EaseInOutCubic
+            )
         } else if (itemId == R.id.actionSave) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                saveToGallery();
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                saveToGallery()
             } else {
-                requestStoragePermission(chart);
+                requestStoragePermission(chart)
             }
         }
-        return true;
+        return true
     }
 
-    @Override
-    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+    override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+        tvX!!.setText(seekBarX!!.getProgress().toString())
+        tvY!!.setText(seekBarY!!.getProgress().toString())
 
-        tvX.setText(String.valueOf(seekBarX.getProgress()));
-        tvY.setText(String.valueOf(seekBarY.getProgress()));
-
-        setData(seekBarX.getProgress(), seekBarY.getProgress());
+        setData(seekBarX!!.getProgress(), seekBarY!!.getProgress().toFloat())
     }
 
-    @Override
-    protected void saveToGallery() {
-        saveToGallery(chart, "PiePolylineChartActivity");
+    override fun saveToGallery() {
+        saveToGallery(chart, "PiePolylineChartActivity")
     }
 
-    private SpannableString generateCenterSpannableText() {
-
-        SpannableString s = new SpannableString("MPAndroidChart\ndeveloped by Philipp Jahoda");
-        s.setSpan(new RelativeSizeSpan(1.5f), 0, 14, 0);
-        s.setSpan(new StyleSpan(Typeface.NORMAL), 14, s.length() - 15, 0);
-        s.setSpan(new ForegroundColorSpan(Color.GRAY), 14, s.length() - 15, 0);
-        s.setSpan(new RelativeSizeSpan(.65f), 14, s.length() - 15, 0);
-        s.setSpan(new StyleSpan(Typeface.ITALIC), s.length() - 14, s.length(), 0);
-        s.setSpan(new ForegroundColorSpan(ColorTemplate.getHoloBlue()), s.length() - 14, s.length(), 0);
-        return s;
+    private fun generateCenterSpannableText(): SpannableString {
+        val s = SpannableString("MPAndroidChart\ndeveloped by Philipp Jahoda")
+        s.setSpan(RelativeSizeSpan(1.5f), 0, 14, 0)
+        s.setSpan(StyleSpan(Typeface.NORMAL), 14, s.length - 15, 0)
+        s.setSpan(ForegroundColorSpan(Color.GRAY), 14, s.length - 15, 0)
+        s.setSpan(RelativeSizeSpan(.65f), 14, s.length - 15, 0)
+        s.setSpan(StyleSpan(Typeface.ITALIC), s.length - 14, s.length, 0)
+        s.setSpan(ForegroundColorSpan(ColorTemplate.getHoloBlue()), s.length - 14, s.length, 0)
+        return s
     }
 
-    @Override
-    public void onValueSelected(Entry e, Highlight h) {
-
-        if (e == null)
-            return;
-        Log.i("VAL SELECTED",
-                "Value: " + e.getY() + ", xIndex: " + e.getX()
-                        + ", DataSet index: " + h.getDataSetIndex());
+    override fun onValueSelected(e: Entry?, h: Highlight) {
+        if (e == null) return
+        Log.i(
+            "VAL SELECTED",
+            ("Value: " + e.getY() + ", xIndex: " + e.getX()
+                    + ", DataSet index: " + h.getDataSetIndex())
+        )
     }
 
-    @Override
-    public void onNothingSelected() {
-        Log.i("PieChart", "nothing selected");
+    override fun onNothingSelected() {
+        Log.i("PieChart", "nothing selected")
     }
 
-    @Override
-    public void onStartTrackingTouch(SeekBar seekBar) {}
+    override fun onStartTrackingTouch(seekBar: SeekBar?) {}
 
-    @Override
-    public void onStopTrackingTouch(SeekBar seekBar) {}
+    override fun onStopTrackingTouch(seekBar: SeekBar?) {}
 }
