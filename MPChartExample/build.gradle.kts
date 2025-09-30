@@ -52,6 +52,9 @@ kotlin {
 
 dependencies {
     implementation("androidx.appcompat:appcompat:1.7.1")
+    implementation("androidx.constraintlayout:constraintlayout:2.2.1")
+    implementation("androidx.activity:activity:1.11.0")
+    implementation("androidx.activity:activity-ktx:1.11.0")
     implementation("androidx.work:work-runtime:2.10.5")
     implementation("com.google.android.material:material:1.13.0")
     implementation(project(":MPChartLib"))

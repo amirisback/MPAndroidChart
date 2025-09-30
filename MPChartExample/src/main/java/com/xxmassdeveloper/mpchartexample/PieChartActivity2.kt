@@ -5,18 +5,11 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
-import android.graphics.Typeface
 import android.os.Bundle
-import android.text.SpannableString
-import android.text.style.ForegroundColorSpan
-import android.text.style.RelativeSizeSpan
-import android.text.style.StyleSpan
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.WindowManager
-import android.widget.SeekBar
-import android.widget.SeekBar.OnSeekBarChangeListener
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import com.github.mikephil.charting.animation.Easing
@@ -31,13 +24,12 @@ import com.github.mikephil.charting.listener.OnChartValueSelectedListener
 import com.github.mikephil.charting.utils.ColorTemplate
 import com.github.mikephil.charting.utils.MPPointF
 import com.xxmassdeveloper.mpchartexample.base.BaseActivityBinding
-import com.xxmassdeveloper.mpchartexample.databinding.ActivityPiechartBinding
+import com.xxmassdeveloper.mpchartexample.databinding.ActivityPiechart2Binding
 
-class PieChartActivity : BaseActivityBinding<ActivityPiechartBinding>(), OnSeekBarChangeListener,
-    OnChartValueSelectedListener {
+class PieChartActivity2 : BaseActivityBinding<ActivityPiechart2Binding>() {
 
-    override fun setupViewBinding(): ActivityPiechartBinding {
-        return ActivityPiechartBinding.inflate(layoutInflater)
+    override fun setupViewBinding(): ActivityPiechart2Binding {
+        return ActivityPiechart2Binding.inflate(layoutInflater)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,60 +42,60 @@ class PieChartActivity : BaseActivityBinding<ActivityPiechartBinding>(), OnSeekB
         title = "PieChartActivity"
 
         binding.apply {
-            seekBar1.setOnSeekBarChangeListener(this@PieChartActivity)
-            seekBar2.setOnSeekBarChangeListener(this@PieChartActivity)
 
             chart.setUsePercentValues(true)
             chart.description.isEnabled = false
-            chart.setExtraOffsets(5f, 10f, 5f, 5f)
+            chart.isDrawHoleEnabled = false
+            chart.setDrawCenterText(false)
 
+            chart.setExtraOffsets(5f, 10f, 5f, 5f)
             chart.setDragDecelerationFrictionCoef(0.95f)
 
             chart.setCenterTextTypeface(tfLight)
-            chart.centerText = generateCenterSpannableText()
-
-            chart.isDrawHoleEnabled = true
-            chart.setHoleColor(Color.WHITE)
-
-            chart.setTransparentCircleColor(Color.WHITE)
-            chart.setTransparentCircleAlpha(110)
-
-            chart.holeRadius = 58f
-            chart.transparentCircleRadius = 61f
-
-            chart.setDrawCenterText(true)
 
             chart.setRotationAngle(0f)
             // enable rotation of the chart by touch
             chart.isRotationEnabled = true
             chart.isHighlightPerTapEnabled = true
 
-            // chart.setUnit(" €");
-            // chart.setDrawUnitsInChart(true);
-
             // add a selection listener
-            chart.setOnChartValueSelectedListener(this@PieChartActivity)
+            chart.setOnChartValueSelectedListener(object : OnChartValueSelectedListener {
+                override fun onValueSelected(
+                    e: Entry?,
+                    h: Highlight,
+                ) {
+                    if (e == null) return
+                    Log.i(
+                        "VAL SELECTED",
+                        ("Value: " + e.y + ", index: " + h.x + ", DataSet index: " + h.dataSetIndex)
+                    )
+                }
 
-            seekBar1.progress = 4
-            seekBar2.progress = 10
+                override fun onNothingSelected() {
+                    Log.i("PieChart", "nothing selected")
+                }
+            })
 
             chart.animateY(1400, Easing.EaseInOutQuad)
 
             // chart.spin(2000, 0, 360);
-            val l = chart.legend
-            l.verticalAlignment = Legend.LegendVerticalAlignment.TOP
-            l.horizontalAlignment = Legend.LegendHorizontalAlignment.RIGHT
-            l.orientation = Legend.LegendOrientation.VERTICAL
-            l.setDrawInside(false)
-            l.xEntrySpace = 7f
-            l.yEntrySpace = 0f
-            l.yOffset = 0f
+            chart.legend.apply {
+                verticalAlignment = Legend.LegendVerticalAlignment.TOP
+                horizontalAlignment = Legend.LegendHorizontalAlignment.RIGHT
+                orientation = Legend.LegendOrientation.VERTICAL
+                setDrawInside(false)
+                xEntrySpace = 7f
+                yEntrySpace = 0f
+                yOffset = 0f
+            }
 
             // entry label styling
             chart.setEntryLabelColor(Color.WHITE)
             chart.setEntryLabelTypeface(tfRegular)
             chart.setEntryLabelTextSize(12f)
         }
+
+        setData(4, 5.toFloat())
     }
 
     private fun setData(count: Int, range: Float) {
@@ -116,7 +108,6 @@ class PieChartActivity : BaseActivityBinding<ActivityPiechartBinding>(), OnSeekB
                 PieEntry(
                     ((Math.random() * range) + range / 5).toFloat(),
                     parties[i % parties.size],
-                    resources.getDrawable(R.drawable.star)
                 )
             )
         }
@@ -125,7 +116,7 @@ class PieChartActivity : BaseActivityBinding<ActivityPiechartBinding>(), OnSeekB
 
         dataSet.setDrawIcons(false)
 
-        dataSet.setSliceSpace(3f)
+        dataSet.setSliceSpace(0f)
         dataSet.setIconsOffset(MPPointF(0f, 40f))
         dataSet.selectionShift = 5f
 
@@ -262,45 +253,8 @@ class PieChartActivity : BaseActivityBinding<ActivityPiechartBinding>(), OnSeekB
         return true
     }
 
-    override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-        binding.apply {
-
-            tvXMax.text = seekBar1.progress.toString()
-            tvYMax.text = seekBar2.progress.toString()
-
-            setData(seekBar1.progress, seekBar2.progress.toFloat())
-        }
-    }
-
     override fun saveToGallery() {
         saveToGallery(binding.chart, "PieChartActivity")
     }
 
-    private fun generateCenterSpannableText(): SpannableString {
-        val s = SpannableString("MPAndroidChart\ndeveloped by Philipp Jahoda")
-        s.setSpan(RelativeSizeSpan(1.7f), 0, 14, 0)
-        s.setSpan(StyleSpan(Typeface.NORMAL), 14, s.length - 15, 0)
-        s.setSpan(ForegroundColorSpan(Color.GRAY), 14, s.length - 15, 0)
-        s.setSpan(RelativeSizeSpan(.8f), 14, s.length - 15, 0)
-        s.setSpan(StyleSpan(Typeface.ITALIC), s.length - 14, s.length, 0)
-        s.setSpan(ForegroundColorSpan(ColorTemplate.getHoloBlue()), s.length - 14, s.length, 0)
-        return s
-    }
-
-    override fun onValueSelected(e: Entry?, h: Highlight) {
-        if (e == null) return
-        Log.i(
-            "VAL SELECTED",
-            ("Value: " + e.y + ", index: " + h.x
-                    + ", DataSet index: " + h.dataSetIndex)
-        )
-    }
-
-    override fun onNothingSelected() {
-        Log.i("PieChart", "nothing selected")
-    }
-
-    override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-
-    override fun onStopTrackingTouch(seekBar: SeekBar?) {}
 }

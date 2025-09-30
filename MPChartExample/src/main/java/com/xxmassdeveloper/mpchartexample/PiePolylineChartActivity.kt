@@ -49,7 +49,7 @@ class PiePolylineChartActivity : DemoBase(), OnSeekBarChangeListener, OnChartVal
             WindowManager.LayoutParams.FLAG_FULLSCREEN,
             WindowManager.LayoutParams.FLAG_FULLSCREEN
         )
-        setContentView(R.layout.activity_piechart)
+        setContentView(R.layout.activity_piechart_polyline)
 
         title = "PiePolylineChartActivity"
 
