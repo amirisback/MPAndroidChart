@@ -46,6 +46,7 @@ import com.xxmassdeveloper.mpchartexample.StackedBarActivity
 import com.xxmassdeveloper.mpchartexample.StackedBarActivityNegative
 import com.xxmassdeveloper.mpchartexample.fragments.SimpleChartDemo
 import androidx.core.net.toUri
+import com.xxmassdeveloper.mpchartexample.LineChartActivity1Custom
 import com.xxmassdeveloper.mpchartexample.PieChartActivity2
 
 class MainActivity : AppCompatActivity(), OnItemClickListener {
@@ -123,6 +124,7 @@ class MainActivity : AppCompatActivity(), OnItemClickListener {
 
         objects.add(38, ContentItem("Amirisback Custom", ))
         objects.add(39, ContentItem("Pie Chart", "Simple pie chart."))
+        objects.add(40, ContentItem("Line Chart", "Simple line chart."))
         //objects.add(38, new ContentItem("Realm.io Examples", "See more examples that use Realm.io mobile database."));
         val adapter = MyAdapter(this, objects)
 
@@ -170,6 +172,7 @@ class MainActivity : AppCompatActivity(), OnItemClickListener {
             36 -> i = Intent(this, RealtimeLineChartActivity::class.java)
             37 -> i = Intent(this, LineChartTime::class.java)
             39 -> i = Intent(this, PieChartActivity2::class.java)
+            40 -> i = Intent(this, LineChartActivity1Custom::class.java)
         }
 
         if (i != null) startActivity(i)

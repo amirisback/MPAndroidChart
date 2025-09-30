@@ -10,28 +10,22 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.WindowManager
-import android.widget.SeekBar
-import android.widget.SeekBar.OnSeekBarChangeListener
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import com.github.mikephil.charting.animation.Easing
 import com.github.mikephil.charting.charts.LineChart
-import com.github.mikephil.charting.components.Legend.LegendForm
-import com.github.mikephil.charting.components.LimitLine
-import com.github.mikephil.charting.components.LimitLine.LimitLabelPosition
 import com.github.mikephil.charting.components.XAxis
-import com.github.mikephil.charting.components.YAxis
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.IFillFormatter
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import com.github.mikephil.charting.highlight.Highlight
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener
-import com.github.mikephil.charting.utils.Utils
 import com.xxmassdeveloper.mpchartexample.base.BaseActivityBinding
 import com.xxmassdeveloper.mpchartexample.custom.MyMarkerView
-import com.xxmassdeveloper.mpchartexample.databinding.ActivityLinechart1Binding
+import com.xxmassdeveloper.mpchartexample.databinding.ActivityLinechart1CustomBinding
 
 /**
  * Example of a heavily customized [LineChart] with limit lines, custom line shapes, etc.
@@ -39,11 +33,10 @@ import com.xxmassdeveloper.mpchartexample.databinding.ActivityLinechart1Binding
  * @since 1.7.4
  * @version 3.1.0
  */
-class LineChartActivity1 : BaseActivityBinding<ActivityLinechart1Binding>(),
-    OnSeekBarChangeListener, OnChartValueSelectedListener {
+class LineChartActivity1Custom : BaseActivityBinding<ActivityLinechart1CustomBinding>() {
 
-    override fun setupViewBinding(): ActivityLinechart1Binding {
-        return ActivityLinechart1Binding.inflate(layoutInflater)
+    override fun setupViewBinding(): ActivityLinechart1CustomBinding {
+        return ActivityLinechart1CustomBinding.inflate(layoutInflater)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,119 +46,84 @@ class LineChartActivity1 : BaseActivityBinding<ActivityLinechart1Binding>(),
             WindowManager.LayoutParams.FLAG_FULLSCREEN
         )
 
-        title = "LineChartActivity1"
+        title = "LineChartActivity1Custom"
 
-        binding.apply {
+        binding.chart.apply {
 
-            seekBarX.setOnSeekBarChangeListener(this@LineChartActivity1)
-            seekBarY.setOnSeekBarChangeListener(this@LineChartActivity1)
+            setBackgroundColor(Color.WHITE)
+            setTouchEnabled(true)
+            setDrawGridBackground(false)
+            description.isEnabled = false
+            axisRight.isEnabled = false
 
-            seekBarY.max = 180
+            // set listeners
+            setOnChartValueSelectedListener(object : OnChartValueSelectedListener {
+                override fun onValueSelected(e: Entry, h: Highlight?) {
+                    Log.i("Entry selected", e.toString())
+                    Log.i("LOW HIGH", "low: " + getLowestVisibleX() + ", high: " + getHighestVisibleX())
+                    Log.i("MIN MAX", "xMin: $xChartMin, xMax: $xChartMax, yMin: $yChartMin, yMax: $yChartMax")
+                }
 
-            run {
-
-                // background color
-                chart.setBackgroundColor(Color.WHITE)
-
-                // disable description text
-                chart.description.isEnabled = false
-
-                // enable touch gestures
-                chart.setTouchEnabled(true)
-
-                // set listeners
-                chart.setOnChartValueSelectedListener(this@LineChartActivity1)
-                chart.setDrawGridBackground(false)
-
-                // create marker to display box when values are selected
-                val mv = MyMarkerView(this@LineChartActivity1, R.layout.custom_marker_view)
-
-                // Set the marker to the chart
-                mv.chartView = chart
-                chart.marker = mv
-
-                // enable scaling and dragging
-                chart.setDragEnabled(true)
-                chart.setScaleEnabled(true)
-
-                // chart.setScaleXEnabled(true);
-                // chart.setScaleYEnabled(true);
-
-                // force pinch zoom along both axis
-                chart.setPinchZoom(true)
-            }
-
-            val xAxis: XAxis
-            run {
-                // // X-Axis Style // //
-                xAxis = chart.xAxis
-
-                // vertical grid lines
-                xAxis.enableGridDashedLine(10f, 10f, 0f)
-            }
-
-            val yAxis: YAxis
-            run {
-                // // Y-Axis Style // //
-                yAxis = chart.axisLeft
-
-                // disable dual axis (only use LEFT axis)
-                chart.axisRight.isEnabled = false
-
-                // horizontal grid lines
-                yAxis.enableGridDashedLine(10f, 10f, 0f)
-
-                // axis range
-                yAxis.setAxisMaximum(200f)
-                yAxis.setAxisMinimum(-50f)
-            }
+                override fun onNothingSelected() {
+                    Log.i("Nothing selected", "Nothing selected.")
+                }
+            })
 
 
-            run {
-                // // Create Limit Lines // //
-                val llXAxis = LimitLine(9f, "Index 10")
-                llXAxis.setLineWidth(4f)
-                llXAxis.enableDashedLine(10f, 10f, 0f)
-                llXAxis.labelPosition = LimitLabelPosition.RIGHT_BOTTOM
-                llXAxis.setTextSize(10f)
-                llXAxis.typeface = tfRegular
 
-                val ll1 = LimitLine(150f, "Upper Limit")
-                ll1.setLineWidth(4f)
-                ll1.enableDashedLine(10f, 10f, 0f)
-                ll1.labelPosition = LimitLabelPosition.RIGHT_TOP
-                ll1.setTextSize(10f)
-                ll1.typeface = tfRegular
+            // create marker to display box when values are selected
+            val mv = MyMarkerView(this@LineChartActivity1Custom, R.layout.custom_marker_view)
 
-                val ll2 = LimitLine(-30f, "Lower Limit")
-                ll2.setLineWidth(4f)
-                ll2.enableDashedLine(10f, 10f, 0f)
-                ll2.labelPosition = LimitLabelPosition.RIGHT_BOTTOM
-                ll2.setTextSize(10f)
-                ll2.typeface = tfRegular
+            // Set the marker to the chart
+            mv.chartView = this
+            marker = mv
 
-                // draw limit lines behind data instead of on top
-                yAxis.setDrawLimitLinesBehindData(true)
-                xAxis.setDrawLimitLinesBehindData(true)
+            setDragEnabled(true)
+            setScaleEnabled(true)
+            setPinchZoom(true)
 
-                // add limit lines
-                yAxis.addLimitLine(ll1)
-                yAxis.addLimitLine(ll2)
-            }
+            val xAxis = xAxis
+            xAxis.enableGridDashedLine(10f, 10f, 0f)
+            xAxis.position = XAxis.XAxisPosition.BOTTOM
+            xAxis.granularity = 1f
+            xAxis.valueFormatter = IndexAxisValueFormatter(
+                listOf(
+                    "Jan",
+                    "Feb",
+                    "Mar",
+                    "Apr",
+                    "May",
+                    "Jun",
+                    "Jul",
+                    "Aug",
+                    "Sep",
+                    "Oct",
+                    "Nov",
+                    "Dec"
+                )
+            )
+
+            val yAxis = axisLeft
+            // disable dual axis (only use LEFT axis)
+            axisRight.isEnabled = false
+
+            // horizontal grid lines
+            yAxis.enableGridDashedLine(10f, 10f, 0f)
+
+            // axis range
+            yAxis.setAxisMaximum(1400f)
+            yAxis.setAxisMinimum(0f)
+
+            // draw limit lines behind data instead of on top
+            yAxis.setDrawLimitLinesBehindData(true)
+            xAxis.setDrawLimitLinesBehindData(true)
 
             // add data
-            seekBarX.progress = 45
-            seekBarY.progress = 180
-            setData(45, 180f)
+            setData(10, 180f)
 
             // draw points over time
-            chart.animateX(1500)
+            animateX(1500)
 
-            // get the legend (only possible after setting data)
-            val l = chart.legend
-
-            // draw legend entries as lines
-            l.form = LegendForm.LINE
         }
     }
 
@@ -179,9 +137,7 @@ class LineChartActivity1 : BaseActivityBinding<ActivityLinechart1Binding>(),
 
         val set1: LineDataSet
 
-        if (binding.chart.data != null &&
-            binding.chart.data.getDataSetCount() > 0
-        ) {
+        if (binding.chart.data != null && binding.chart.data.getDataSetCount() > 0) {
             set1 = binding.chart.data.getDataSetByIndex(0) as LineDataSet
             set1.values = values
             set1.notifyDataSetChanged()
@@ -201,11 +157,13 @@ class LineChartActivity1 : BaseActivityBinding<ActivityLinechart1Binding>(),
             set1.setCircleColor(Color.BLACK)
 
             // line thickness and point size
-            set1.setLineWidth(1f)
-            set1.circleRadius = 3f
+            set1.setLineWidth(3f)
+            set1.circleRadius = 4f
 
             // draw points as solid circles
             set1.setDrawCircleHole(false)
+            set1.setDrawValues(false)
+            set1.setDrawFilled(false)
 
             // customize legend entry
             set1.formLineWidth = 1f
@@ -214,25 +172,17 @@ class LineChartActivity1 : BaseActivityBinding<ActivityLinechart1Binding>(),
 
             // text size of values
             set1.valueTextSize = 9f
+            set1.mode = LineDataSet.Mode.CUBIC_BEZIER
 
             // draw selection line as dashed
             set1.enableDashedHighlightLine(10f, 5f, 0f)
 
             // set the filled area
-            set1.setDrawFilled(true)
-            set1.fillFormatter =
-                IFillFormatter { dataSet, dataProvider -> binding.chart.axisLeft.axisMinimum }
-
-            // set color of filled area
-            if (Utils.getSDKInt() >= 18) {
-                // drawables only supported on api level 18 and above
-                val drawable = ContextCompat.getDrawable(this, R.drawable.fade_red)
-                set1.fillDrawable = drawable
-            } else {
-                set1.setFillColor(Color.BLACK)
-            }
+            set1.fillFormatter = IFillFormatter { dataSet, dataProvider -> binding.chart.axisLeft.axisMinimum }
 
             val dataSets = ArrayList<ILineDataSet?>()
+            dataSets.add(set1) // add the data sets
+            dataSets.add(set1) // add the data sets
             dataSets.add(set1) // add the data sets
 
             // create a data object with the data sets
@@ -392,37 +342,8 @@ class LineChartActivity1 : BaseActivityBinding<ActivityLinechart1Binding>(),
         return true
     }
 
-    override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-        binding.tvXMax.text = binding.seekBarX.progress.toString()
-        binding.tvYMax.text = binding.seekBarY.progress.toString()
-
-        setData(binding.seekBarX.progress, binding.seekBarY.progress.toFloat())
-
-        // redraw
-        binding.chart.invalidate()
-    }
-
     override fun saveToGallery() {
         saveToGallery(binding.chart, "LineChartActivity1")
     }
 
-    override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-
-    override fun onStopTrackingTouch(seekBar: SeekBar?) {}
-
-    override fun onValueSelected(e: Entry, h: Highlight?) {
-        Log.i("Entry selected", e.toString())
-        Log.i(
-            "LOW HIGH",
-            "low: " + binding.chart.getLowestVisibleX() + ", high: " + binding.chart.getHighestVisibleX()
-        )
-        Log.i(
-            "MIN MAX",
-            "xMin: " + binding.chart.xChartMin + ", xMax: " + binding.chart.xChartMax + ", yMin: " + binding.chart.yChartMin + ", yMax: " + binding.chart.yChartMax
-        )
-    }
-
-    override fun onNothingSelected() {
-        Log.i("Nothing selected", "Nothing selected.")
-    }
 }
